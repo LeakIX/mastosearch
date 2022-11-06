@@ -1,0 +1,50 @@
+version: '2.2'
+services:
+  nsqd:
+    image: nsqio/nsq
+    command: /nsqd
+    ports:
+      - 4150:4150
+      - 4151:4151
+  nsqadmin:
+    image: nsqio/nsq
+    command: /nsqadmin -nsqd-http-address=nsqd:4151
+    ports:
+      - 4171:4171
+  es01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.7
+    container_name: es01
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - bootstrap.memory_lock=true
+      - cluster.initial_master_nodes=es01
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - data01:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+    networks:
+      - elastic
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.7
+    ports:
+      - 5601:5601
+    environment:
+      ELASTICSEARCH_HOSTS: '["http://es01:9200"]'
+volumes:
+  data01:
+    driver: local
+  data02:
+    driver: local
+  data03:
+    driver: local
+
+networks:
+  elastic:
+    driver: bridge
+
