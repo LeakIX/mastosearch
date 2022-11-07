@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"log"
 	"math/rand"
 	"net/http"
 	"strings"
@@ -37,11 +36,11 @@ func (sser *ServerSentEventReader) start() {
 	retryTime := 30
 	for {
 		if err := sser.connect(); err != nil {
-			log.Println(err)
+			//log.Println(err)
 		} else {
 			retryTime = 30
 			if err := sser.stream(); err != nil {
-				log.Println(err)
+				//log.Println(err)
 			}
 		}
 		rand.Seed(time.Now().UnixNano())
@@ -49,7 +48,7 @@ func (sser *ServerSentEventReader) start() {
 		if retryTime < 600 {
 			retryTime += 30
 		}
-		log.Printf("reconnecting to %s in %d seconds", sser.url, sleepTime)
+		//log.Printf("reconnecting to %s in %d seconds", sser.url, sleepTime)
 		time.Sleep(time.Duration(sleepTime) * time.Second)
 	}
 }

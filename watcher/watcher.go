@@ -2,10 +2,8 @@ package watcher
 
 import (
 	"github.com/LeakIX/mastosearch/models"
-	"github.com/LeakIX/mastosearch/stream"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
-	"log"
 	"sync"
 )
 
@@ -41,31 +39,7 @@ func (w *Watcher) AddServer(server models.Server) {
 	if found {
 		return
 	}
-	watchedServer := &WatchedServer{
-		server:    server,
-		status:    "disconnected",
-		userQueue: make(chan models.Update, 256),
-		userDb:    w.userDb,
-	}
+	watchedServer := NewWatchedServer(server, w.userDb, w.outputChannel, w.deleteChannel)
 	w.servers[server.Domain] = watchedServer
-	go w.watchServer(watchedServer)
-	go watchedServer.DownloadUserPosts(w.outputChannel)
 	return
-}
-
-func (w *Watcher) watchServer(watchedServer *WatchedServer) {
-	proxyChannel := make(chan models.Update)
-	_, err := stream.NewPublicStream(watchedServer.server, proxyChannel, w.deleteChannel)
-	if err != nil {
-		log.Println(watchedServer.server.Domain, err)
-	}
-	for event := range proxyChannel {
-		select {
-		case watchedServer.userQueue <- event:
-			// Watched server is now processing user account
-		default:
-			// Do nothing, server account check is full
-		}
-		w.outputChannel <- event
-	}
 }

@@ -55,7 +55,6 @@ func (bs *BulkService) runBulkService() {
 }
 
 func (bs *BulkService) commitBulkActions() {
-	log.Printf("Storing %d items", bs.bulkService.NumberOfActions())
 	bulkResponses, err := bs.bulkService.Do(context.Background())
 	if err != nil {
 		log.Fatal(err)
@@ -67,5 +66,4 @@ func (bs *BulkService) commitBulkActions() {
 		panic("Bulk failed")
 	}
 	bs.bulkService.Reset()
-	log.Println("Stored")
 }

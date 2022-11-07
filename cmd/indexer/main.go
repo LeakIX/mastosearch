@@ -72,12 +72,26 @@ func (h *Deleter) HandleMessage(m *nsq.Message) error {
 	if err != nil {
 		return err
 	}
-	_, err = esClient.DeleteByQuery().Index("updates").Query(
-		elastic.NewBoolQuery().Must(
-			elastic.NewMatchQuery("id", deleteRequest.Id),
-			elastic.NewMatchQuery("account.server", deleteRequest.Server),
-		)).Do(context.Background())
-
+	if deleteRequest.Id != "" {
+		_, err = esClient.DeleteByQuery().Index("updates").Query(
+			elastic.NewBoolQuery().Must(
+				elastic.NewMatchQuery("id", deleteRequest.Id),
+				elastic.NewMatchQuery("account.server", deleteRequest.Server),
+			)).Do(context.Background())
+		if err != nil {
+			log.Println(err)
+		}
+	} else if deleteRequest.UserId != "" {
+		log.Println(deleteRequest)
+		_, err = esClient.DeleteByQuery().Index("updates").Query(
+			elastic.NewBoolQuery().Must(
+				elastic.NewMatchQuery("account.id", deleteRequest.UserId),
+				elastic.NewMatchQuery("account.server", deleteRequest.Server),
+			)).Do(context.Background())
+		if err != nil {
+			log.Println(err)
+		}
+	}
 	return err
 }
 

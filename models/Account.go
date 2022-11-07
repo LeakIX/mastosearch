@@ -22,7 +22,7 @@ type Account struct {
 	FollowingCount int       `json:"following_count"`
 	StatusesCount  int       `json:"statuses_count"`
 	LastStatusAt   string    `json:"last_status_at"`
-	NoIndex        bool      `json:"no_index"`
+	NoIndex        *bool     `json:"noindex"`
 	Fields         []Field   `json:"fields"`
 }
 

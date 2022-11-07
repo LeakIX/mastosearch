@@ -39,6 +39,7 @@ func main() {
 		}
 		msWatcher.AddServer(mastodonServer)
 	}
+	log.Println("Watcher is running")
 	config := nsq.NewConfig()
 	producer, err := nsq.NewProducer(getConfig("NSQD_SERVER", "127.0.0.1:4150"), config)
 	if err != nil {
@@ -48,13 +49,11 @@ func main() {
 		for deleteRequest := range deleteChannel {
 			payload, _ := json.Marshal(&deleteRequest)
 			producer.Publish("deletes", payload)
-			log.Printf("Sent delete request\n")
 		}
 	}(deleteChannel)
 	for update := range channel {
 		payload, _ := json.Marshal(&update)
 		producer.Publish("updates", payload)
-		log.Printf("Sent message\n")
 	}
 }
 
