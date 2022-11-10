@@ -1,5 +1,28 @@
 version: '2.2'
 services:
+  watcher:
+    image: watcher
+    build:
+      context: .
+      dockerfile: Dockerfile.watcher
+    environment:
+      MASTODON_SERVER: mastodon.social
+      NSQD_SERVER: nsqd:4150
+    volumes:
+      - watcherdb:/data
+    depends_on:
+      - nsqd
+  indexer:
+    image: indexer
+    build:
+      context: .
+      dockerfile: Dockerfile.indexer
+    environment:
+      NSQD_SERVER: nsqd:4150
+      ES_SERVER: http://es01:9200
+    depends_on:
+      - nsqd
+      - es01
   nsqd:
     image: nsqio/nsq
     command: /nsqd
@@ -28,8 +51,6 @@ services:
       - data01:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
-    networks:
-      - elastic
   kibana:
     image: docker.elastic.co/kibana/kibana:7.17.7
     ports:
@@ -39,12 +60,5 @@ services:
 volumes:
   data01:
     driver: local
-  data02:
+  watcherdb:
     driver: local
-  data03:
-    driver: local
-
-networks:
-  elastic:
-    driver: bridge
-

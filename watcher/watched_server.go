@@ -122,8 +122,8 @@ func (ws *WatchedServer) legacyNoIndexStatus(account models.Account) bool {
 	if err != nil {
 		log.Println(err)
 	}
-	req.Header.Set("User-Agent", "FedSearch/0.1 (+https://fedsearch.io)")
-	resp, err := ws.httpClient.Do(req)
+	req.Header.Set("User-Agent", "Mastosearch/0.1 (+https://github.com/LeakIX/mastosearch)")
+	resp, err := ws.HttpDo(req)
 	if err != nil || resp.StatusCode != 200 {
 		log.Println(err)
 		// in doubt, no index
@@ -179,7 +179,7 @@ func (ws *WatchedServer) getAllPosts(lastUpdate models.Update, watchedUser Watch
 			statusUrl += "&since_id=" + watchedUser.LastUpdateId
 		}
 		req, _ := http.NewRequest(http.MethodGet, statusUrl, nil)
-		resp, err := ws.httpClient.Do(req)
+		resp, err := ws.HttpDo(req)
 		if err != nil {
 			log.Println("failed user statuses", err)
 			return

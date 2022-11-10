@@ -15,9 +15,15 @@ This is a 2 part toolset to index the Mastodon federated network.
 
 ## Environment variables
 
+- `MASTODON_SERVER` To watch a single instance, unset watches all
 - `ES_SERVER` Elasticsearch address
 - `NSQD_SERVER` NSQD server
 
-## Requirement
-- NSQ server
-- Elasticsearch server
+## Build & run
+
+````sh
+# Minimum max_map_acount for elasticsearch :
+sudo sysctl vm.max_map_count=262144
+# Build and run from docker-compose.yaml
+docker-compose up --build
+```

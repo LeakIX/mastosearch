@@ -1,0 +1,14 @@
+FROM golang:alpine as builder
+RUN apk update && apk add ca-certificates git sqlite-dev gcc musl-dev && rm -rf /var/cache/apk/*
+ADD . /go/src/github.com/LeakIX/mastosearch
+WORKDIR /go/src/github.com/LeakIX/mastosearch
+RUN go get ./...
+RUN mkdir /build
+RUN go build  -o /build/watcher ./cmd/watcher
+
+FROM alpine
+COPY --from=builder /build/watcher /watcher
+RUN apk update && apk add ca-certificates sqlite && rm -rf /var/cache/apk/*
+RUN mkdir -p /data
+WORKDIR /data
+ENTRYPOINT [ "/watcher" ]

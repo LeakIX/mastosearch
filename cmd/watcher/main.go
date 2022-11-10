@@ -14,30 +14,31 @@ import (
 func main() {
 	channel := make(chan models.Update)
 	deleteChannel := make(chan models.DeleteRequest)
-	var postBody = "{\"query\":\"{nodes{domain,signup}}\\n    \",\"variables\":null}"
-	resp, err := http.DefaultClient.Post("https://api.fediverse.observer/", "application/json", strings.NewReader(postBody))
-	if err != nil {
-		panic(err)
-	}
-	decoder := json.NewDecoder(resp.Body)
-	var nodeList FediverseObsServer
-	err = decoder.Decode(&nodeList)
-	if err != nil {
-		panic(err)
-	}
-	if err != nil {
-		panic(err)
-	}
 	msWatcher := watcher.NewWatcher(channel, deleteChannel)
-	for _, node := range nodeList.Data.Nodes {
-		if node.Domain == "mk.autonomy.earth" || node.Domain == "chaos.social" {
-			continue
+	server := getConfig("MASTODON_SERVER", "")
+	if server == "" {
+		var postBody = "{\"query\":\"{nodes{domain,signup}}\\n    \",\"variables\":null}"
+		resp, err := http.DefaultClient.Post("https://api.fediverse.observer/", "application/json", strings.NewReader(postBody))
+		if err != nil {
+			panic(err)
 		}
-		mastodonServer := models.Server{
-			Domain:           node.Domain,
-			ApprovalRequired: node.Signup,
+		decoder := json.NewDecoder(resp.Body)
+		var nodeList FediverseObsServer
+		err = decoder.Decode(&nodeList)
+		if err != nil {
+			panic(err)
 		}
-		msWatcher.AddServer(mastodonServer)
+		for _, node := range nodeList.Data.Nodes {
+			mastodonServer := models.Server{
+				Domain:           node.Domain,
+				ApprovalRequired: node.Signup,
+			}
+			msWatcher.AddServer(mastodonServer)
+		}
+	} else {
+		msWatcher.AddServer(models.Server{
+			Domain: server,
+		})
 	}
 	log.Println("Watcher is running")
 	config := nsq.NewConfig()
